@@ -7,10 +7,13 @@
     "lib": ["esnext"],
     "module": "esnext",
     "moduleResolution": "node",
-    "noEmit": true,
+    "noEmitOnError": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "es6"
-  }
+    "target": "es6",
+    "downlevelIteration": true,
+    "rootDir": "./src"
+  },
+  "exclude": ["node_modules"]
 }

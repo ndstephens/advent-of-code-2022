@@ -1,8 +1,5 @@
 //* PART ONE
 
-// tsc a.ts -w
-// nodemon a.js
-
 import { readFileSync } from 'fs';
 
 type Opp = 'A' | 'B' | 'C';
