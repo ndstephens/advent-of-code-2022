@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 
-const input = readFileSync('./input.txt', 'utf-8');
 // const input = readFileSync('./example.txt', 'utf-8');
+const input = readFileSync('./input.txt', 'utf-8');
 
 //* PART ONE
 const isFullyContained = (val: number, range: number[]) => {

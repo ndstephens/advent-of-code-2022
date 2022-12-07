@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 
-const input = readFileSync('./input.txt', 'utf-8');
 // const input = readFileSync('./example.txt', 'utf-8');
+const input = readFileSync('./input.txt', 'utf-8');
 
 const priorityValue = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const getPriorityValue = (item: string) => priorityValue.indexOf(item)! + 1;

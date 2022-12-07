@@ -69,8 +69,8 @@ const outcomes = {
 // record point for round outcome
 // Ex. roundScore = roundPoints[outcome[opponentStrategy[oppChoice]][myStrategy[myChoice]]]
 
-const input = readFileSync('./input.txt', 'utf-8');
 // const input = readFileSync('./example.txt', 'utf-8');
+const input = readFileSync('./input.txt', 'utf-8');
 
 const roundsTotal = input
   .split(/\n/)
