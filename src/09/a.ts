@@ -1,65 +1,48 @@
 import { readFileSync } from 'fs';
 
-const input = readFileSync('./example.txt', 'utf-8');
-// const input = readFileSync('./input.txt', 'utf-8');
-
-// keep track of Tail position as a string..."-2,3"
-// each "position" is a "Y,X" value relative to the starting point of "0,0"
-// add each change of position into a Set so as to only keep unique values
-// length of Set is the answer
-
-// create an "isTouching" function
-// both Y and X positions of HEAD and TAIL are only a difference of < or = 1 (absolute values)
-
-// keep track of last 2 DIRECTIONS that HEAD moved (probably just keep track of all directions, pushing each new direction to end of an array)
-
-// if "isTouching" is FALSE and one value of Y,X is 0 and the other is 2 then move TAIL one increment in the most recent direction that HEAD moved
-
-// if "isTouching" is FALSE and one value of Y,X is 1 and the other is 2 then move TAIL one increment in each of the two most recent directions that HEAD moved ?????
-
-// ========================
-//!
-// const grid = Array.from({ length: 30 }).map((row) =>
-//   Array.from({ length: 30 }).map(() => '.')
-// );
-
-// console.table(grid);
-
-// ========================
+// const input = readFileSync('./example2.txt', 'utf-8');
+const input = readFileSync('./input.txt', 'utf-8');
 
 const instructions = input
   .split(/\n/)
   .map((instruction) =>
     instruction.split(' ').map((val, i) => (i === 1 ? +val : val))
   ) as Array<[DirectionType, number]>;
-// )
-//! .slice(0, 150) as Array<[DirectionType, number]>;
 
 type DirectionType = 'R' | 'L' | 'U' | 'D';
-type HorzDirType = 'R' | 'L';
-type VertDirType = 'U' | 'D';
-
-let recentHorzDir: HorzDirType;
-let recentVertDir: VertDirType;
-
 type PositionType = [number, number];
-
+interface KnotInfo {
+  curPos: PositionType;
+}
 const START_VAL: number = 0;
-let HEAD: PositionType = [START_VAL, START_VAL];
-let TAIL: PositionType = [START_VAL, START_VAL];
-const TAIL_POSITIONS: PositionType[] = [TAIL];
+const POSITIONS = Array.from({ length: 10 }).map(
+  (_knot, index) =>
+    ({
+      index, //! used with debugging
+      curPos: [START_VAL, START_VAL],
+    } as KnotInfo)
+);
+const TAIL_POSITIONS: PositionType[] = [[START_VAL, START_VAL]];
 
-//! PRINT HEAD AND TAIL TO GRID
-// grid[29 - (TAIL[0] + 15)][TAIL[1] + 15] = 'T';
-// grid[29 - (HEAD[0] + 15)][HEAD[1] + 15] = 'H';
+//! PRINT GRID - DEBUGGING
+// const grid = Array.from({ length: 30 }).map((row) =>
+//   Array.from({ length: 30 }).map(() => '.')
+// );
+// POSITIONS.forEach((knot, i) => {
+//   const index = 9 - i;
+//   grid[29 - (POSITIONS[index].curPos[0] + 15)][
+//     POSITIONS[index].curPos[1] + 15
+//   ] = index.toString();
+// });
 // console.table(grid);
+//! PRINT GRID
 
 const posDiff = (
-  [headY, headX]: PositionType,
-  [tailY, tailX]: PositionType
+  [leadY, leadX]: PositionType,
+  [followY, followX]: PositionType
 ): PositionType => {
-  const yDiff = headY - tailY;
-  const xDiff = headX - tailX;
+  const yDiff = leadY - followY;
+  const xDiff = leadX - followX;
 
   return [yDiff, xDiff];
 };
@@ -68,7 +51,7 @@ const isTouching = ([yDiff, xDiff]: PositionType) => {
   return Math.abs(yDiff) <= 1 && Math.abs(xDiff) <= 1;
 };
 
-const updatedPosition = (
+const updatedHeadPosition = (
   [curY, curX]: PositionType,
   direction: DirectionType
 ) => {
@@ -88,46 +71,62 @@ const updatedPosition = (
   }
 };
 
-const moveTail = ([yDiff, xDiff]: PositionType, direction: DirectionType) => {
+const moveFollower = ([yDiff, xDiff]: PositionType, curKnot: KnotInfo) => {
+  const yPos = curKnot.curPos[0];
+  const xPos = curKnot.curPos[1];
+  const yMove = Math.sign(yDiff) * 1;
+  const xMove = Math.sign(xDiff) * 1;
   // one of the values must be 2
-  if (Math.abs(yDiff) === 0 || Math.abs(xDiff) === 0) {
-    // move TAIL one increment in the most recent direction that HEAD moved
-    TAIL = updatedPosition(TAIL, direction);
-  } else if (Math.abs(yDiff) === 1 || Math.abs(xDiff) === 1) {
-    // move TAIL one increment in each of the two most recent directions that HEAD moved
-    TAIL = updatedPosition(TAIL, recentHorzDir);
-    TAIL = updatedPosition(TAIL, recentVertDir);
+  if (yDiff === 0) {
+    curKnot.curPos = [yPos, xPos + xMove];
+  } else if (xDiff === 0) {
+    curKnot.curPos = [yPos + yMove, xPos];
+  } else if (Math.abs(yDiff) >= 1 || Math.abs(xDiff) >= 1) {
+    curKnot.curPos = [yPos + yMove, xPos + xMove];
   }
 };
 
-const getDirType = (direction: DirectionType) =>
-  ['U', 'D'].includes(direction) ? 'V' : 'H';
+//! DEBUGGING
+// let counter = 0;
 
-instructions.forEach(([direction, numMoves], index) => {
-  if (getDirType(direction) === 'V') {
-    recentVertDir = direction as VertDirType;
-  } else if (getDirType(direction) === 'H') {
-    recentHorzDir = direction as HorzDirType;
-  }
+instructions.forEach(([direction, numMoves]) => {
+  //! DEBUGGING
+  // counter++;
 
   for (let i = 1; i <= numMoves; i++) {
-    HEAD = updatedPosition(HEAD, direction);
+    //! SET BREAKPOINT HERE IN "a.js"
+    POSITIONS.forEach((curKnot, index) => {
+      if (index === 0) {
+        // HEAD knot
+        curKnot.curPos = updatedHeadPosition(curKnot.curPos, direction);
+      } else {
+        // Follower knots
+        const parentKnot = POSITIONS[index - 1];
+        const diff = posDiff(parentKnot.curPos, curKnot.curPos);
 
-    const diff = posDiff(HEAD, TAIL);
-
-    if (!isTouching(diff)) {
-      moveTail(diff, direction);
-      TAIL_POSITIONS.push(TAIL);
-    }
-
-    //! PRINT HEAD AND TAIL TO GRID
+        if (!isTouching(diff)) {
+          moveFollower(diff, curKnot);
+          if (index === 9) {
+            // TAIL knot
+            TAIL_POSITIONS.push(curKnot.curPos);
+          }
+        }
+      }
+    });
+    //! PRINT GRID - DEBUGGING
     // grid.forEach((row, ri) =>
     //   row.forEach((column, ci) => (grid[ri][ci] = '.'))
     // );
-    // grid[29 - (TAIL[0] + 15)][TAIL[1] + 15] = 'T';
-    // grid[29 - (HEAD[0] + 15)][HEAD[1] + 15] = 'H';
+    // grid[29 - 15][15] = 'S';
+    // POSITIONS.forEach((knot, i) => {
+    //   const index = 9 - i;
+    //   grid[29 - (POSITIONS[index].curPos[0] + 15)][
+    //     POSITIONS[index].curPos[1] + 15
+    //   ] = index.toString();
+    // });
     // console.log('==> ', `${counter}:`, direction, i);
     // console.table(grid);
+    //! PRINT GRID
   }
 });
 
@@ -140,4 +139,4 @@ const uniqueTailPositions = [
 ].length;
 
 console.log(uniqueTailPositions);
-// 6332
+// 2511
